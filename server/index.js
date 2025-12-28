@@ -1,14 +1,26 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 import GameState from "./models/GameState.js";
 
 dotenv.config();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:4200",
+  })
+);
 app.use(express.json());
 
 const PORT = 5000;
+
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 
 /* ---------- Routes ---------- */
 
@@ -16,7 +28,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "Starflower backend online" });
 });
 
-app.post("/api/game/start", async (req, res) => {
+app.all("/api/game/start", async (req, res) => {
   try {
     const game = new GameState();
     await game.save();
