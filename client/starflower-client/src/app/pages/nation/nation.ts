@@ -50,4 +50,13 @@ export class NationComponent implements OnInit {
       },
     });
   }
+
+  advance() {
+    if (!this.game?._id) return;
+
+    this.gameService.advanceTurn(this.game._id).subscribe((game) => {
+      this.game = game;
+      this.cdr.detectChanges();
+    });
+  }
 }

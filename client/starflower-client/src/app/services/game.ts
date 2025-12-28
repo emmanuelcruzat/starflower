@@ -16,4 +16,8 @@ export class GameService {
   loadGame(id: string) {
     return this.http.get<any>(`${this.baseUrl}/game/${id}`);
   }
+
+  advanceTurn(id: string) {
+    return this.http.post<any>(`${this.baseUrl}/game/${id}/advance`, {});
+  }
 }

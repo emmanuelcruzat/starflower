@@ -53,6 +53,25 @@ app.get("/api/game/:id", async (req, res) => {
   }
 });
 
+app.post("/api/game/:id/advance", async (req, res) => {
+  try {
+    const game = await GameState.findById(req.params.id);
+
+    if (!game) {
+      return res.status(404).json({ error: "Game not found" });
+    }
+
+    game.turn += 1;
+    game.economy += 1;
+    game.stability -= 1;
+
+    await game.save();
+    res.json(game);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid game ID" });
+  }
+});
+
 /* ---------- Start Server AFTER Mongo ---------- */
 
 mongoose
