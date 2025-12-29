@@ -61,9 +61,17 @@ app.post("/api/game/:id/advance", async (req, res) => {
       return res.status(404).json({ error: "Game not found" });
     }
 
+    //change game state
     game.turn += 1;
     game.economy += 1;
     game.stability -= 1;
+
+    //adds new journal entry (hard coded for now)
+    game.journal.push({
+      turn: game.turn,
+      text: "The government advanced the national agenda.",
+      timestamp: new Date(),
+    });
 
     await game.save();
     res.json(game);

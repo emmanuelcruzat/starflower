@@ -7,6 +7,17 @@ const GameStateSchema = new mongoose.Schema({
 
   turn: { type: Number, default: 1 },
 
+  journal: {
+    type: [
+      {
+        turn: Number,
+        text: String,
+        timestamp: Date,
+      },
+    ],
+    default: [],
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
 
