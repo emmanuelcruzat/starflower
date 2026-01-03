@@ -1,0 +1,10 @@
+.option {
+  margin-bottom: 1.25rem;
+}
+
+.option-description {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #444;
+}

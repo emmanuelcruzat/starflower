@@ -8,15 +8,25 @@
     <li><strong>Economy:</strong> {{ game.economy }}</li>
     <li><strong>Legitimacy:</strong> {{ game.legitimacy }}</li>
   </ul>
-  <section *ngIf="game">
-    <h2>{{ currentDecision.title }}</h2>
-    <p>{{ currentDecision.prompt }}</p>
+</div>
 
-    <button *ngFor="let opt of currentDecision.options" (click)="choose(opt.id)">
+<section *ngIf="currentDecision">
+  <h2>{{ currentDecision.title }}</h2>
+  <p>{{ currentDecision.prompt }}</p>
+
+  <div *ngFor="let opt of currentDecision.options" class="option">
+    <p class="option-description" *ngIf="opt.description">
+      {{ opt.description }}
+    </p>
+
+    <button (click)="choose(opt.id)">
       {{ opt.label }}
     </button>
-  </section>
-</div>
+  </div>
+
+  <p>Authored by {{ currentDecision.author }}</p>
+  <p>Decision ID: {{ currentDecision.id }} (Series {{ currentDecision.series }})</p>
+</section>
 
 <ng-template #loading>
   <p>Loading nation data...</p>
