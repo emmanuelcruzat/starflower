@@ -38,13 +38,6 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "Starflower backend online" });
 });
 
-//obsolete game start endpoint, but keeping in case I might use it as a dev tool later
-app.all("/api/game/start", auth, async (req, res) => {
-  return res.status(400).json({
-    error: "Games are created during registration",
-  });
-});
-
 app.get("/api/game/:id", async (req, res) => {
   try {
     const game = await GameState.findById(req.params.id);

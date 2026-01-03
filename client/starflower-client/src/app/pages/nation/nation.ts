@@ -1,10 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, DestroyRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { GameService } from '../../services/game';
-import { AuthService } from '../../services/auth';
 import { NationService } from '../../services/nation';
+import { GameService } from '../../services/game';
+
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-nation',
@@ -16,42 +17,59 @@ import { NationService } from '../../services/nation';
 export class NationComponent implements OnInit {
   game: any = null;
   currentDecision: any = null;
+  error: string | null = null;
 
   constructor(
+    public nation: NationService,
     private gameService: GameService,
-    private auth: AuthService,
-    private nation: NationService,
     private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private destroyRef: DestroyRef
+  ) {
+    effect(() => {
+      const nationId = this.nation.nationId();
+      if (!nationId) return;
 
-  ngOnInit() {
-    const nationId = this.nation.nationId();
-    if (!nationId) return; // guard guarantees this won't happen
+      // prevent duplicate loads
+      if (this.game) return;
 
-    this.gameService.loadGame(nationId).subscribe((game) => {
-      this.game = game;
-      this.fetchDecision();
+      this.gameService.loadGame(nationId).subscribe({
+        next: (game) => {
+          this.game = game;
+
+          this.gameService.getActiveDecision(game._id).subscribe({
+            next: (decision) => {
+              this.currentDecision = decision;
+            },
+          });
+        },
+        error: (err) => console.error(err),
+      });
     });
   }
 
-  private fetchDecision() {
-    if (!this.game?._id) return;
-
-    this.gameService.getActiveDecision(this.game._id).subscribe((decision) => {
-      this.currentDecision = decision;
-      this.cdr.detectChanges();
-    });
+  ngOnInit() {
+    // kick off identity resolution
+    this.nation.load();
   }
 
   choose(optionId: string) {
-    if (!this.game || !this.currentDecision) return;
+    if (!this.game?._id || !this.currentDecision?.id) return;
 
-    this.gameService.decide(this.game._id, this.currentDecision.id, optionId).subscribe((res) => {
-      this.game = res.game;
-      this.currentDecision = null;
-      this.fetchDecision();
-      this.cdr.detectChanges();
-    });
+    this.gameService
+      .decide(this.game._id, this.currentDecision.id, optionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.game = res.game;
+          // refresh decision after choosing
+          this.gameService
+            .getActiveDecision(this.game._id)
+            .subscribe((d) => (this.currentDecision = d));
+        },
+        error: (err) => {
+          console.error(err);
+          this.error = 'Failed to submit decision.';
+        },
+      });
   }
 }

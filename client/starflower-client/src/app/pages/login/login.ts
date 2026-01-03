@@ -25,10 +25,7 @@ export class LoginComponent {
 
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
-        //token is stored, kick off identity resolution
-        this.nation.load(true);
-
-        //navigate away from /login
+        this.nation.load(true); // refresh identity
         this.router.navigate(['/nation'], { replaceUrl: true });
       },
       error: () => {

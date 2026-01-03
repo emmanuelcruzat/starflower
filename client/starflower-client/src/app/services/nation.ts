@@ -1,7 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { AuthService } from './auth';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class NationService {

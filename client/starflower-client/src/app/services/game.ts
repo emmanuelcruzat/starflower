@@ -9,10 +9,6 @@ export class GameService {
 
   constructor(private http: HttpClient) {}
 
-  startGame() {
-    return this.http.post<any>(`${this.baseUrl}/game/start`, {});
-  }
-
   loadGame(id: string) {
     return this.http.get<any>(`${this.baseUrl}/game/${id}`);
   }
