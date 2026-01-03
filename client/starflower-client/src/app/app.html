@@ -7,9 +7,18 @@
   <span class="spacer"></span>
 
   <div>
-    <p><strong>National Standard Time (NST):</strong> {{ localTime }}</p>
+    <p>
+      <strong>{{ nation.nationName() || 'Local' }} Standard Time (ST):</strong>
+      {{ localTime }}
+    </p>
     <p><strong>Galactic Mean Time (GMT):</strong> {{ galacticTime }}</p>
   </div>
+  <!-- show logout button only if user is actually logged in -->
+  @if (nation.nationName()) {
+  <button (click)="logout()">Log Out</button>
+  }
 </header>
 
 <router-outlet></router-outlet>
+
+<p>Programmed by Emmanuel Cruzat</p>

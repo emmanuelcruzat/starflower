@@ -5,6 +5,15 @@ import cors from "cors";
 import GameState from "./models/GameState.js";
 //import decision templates
 import { DECISIONS } from "./decisions/starter.js";
+
+//for handling users and password encryption
+import bcrypt from "bcrypt";
+import User from "./models/User.js";
+import jwt from "jsonwebtoken";
+
+//auth.js middleware
+import auth from "./middleware/auth.js";
+
 dotenv.config();
 
 const app = express();
@@ -29,15 +38,11 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "Starflower backend online" });
 });
 
-app.all("/api/game/start", async (req, res) => {
-  try {
-    const game = new GameState();
-    await game.save();
-    res.json(game);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create game" });
-  }
+//obsolete game start endpoint, but keeping in case I might use it as a dev tool later
+app.all("/api/game/start", auth, async (req, res) => {
+  return res.status(400).json({
+    error: "Games are created during registration",
+  });
 });
 
 app.get("/api/game/:id", async (req, res) => {
@@ -134,6 +139,104 @@ app.get("/api/game/:id/decision", async (req, res) => {
   await game.save();
 
   res.json(decision);
+});
+
+//Register accounts
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { email, password, nationName } = req.body;
+
+    if (!email || !password || !nationName) {
+      return res.status(400).json({
+        error: "Email, password, and nation name are required",
+      });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+
+    // Check if nation name already exists (case-insensitive)
+    const existingNation = await GameState.findOne({
+      nationName: new RegExp(`^${nationName}$`, "i"),
+    });
+
+    if (existingNation) {
+      return res.status(400).json({
+        error: "Nation name already exists",
+      });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await User.create({
+      email,
+      passwordHash,
+    });
+
+    // Create nation (GameState)
+    const game = await GameState.create({
+      nationName,
+      ownerId: user._id,
+    });
+
+    res.status(201).json({
+      message: "Account created",
+      userId: user._id,
+      nationId: game._id,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create account" });
+  }
+});
+
+//login
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+//lets the frontend ask if its logged in, and who owns the logged in account
+app.get("/api/auth/me", auth, async (req, res) => {
+  const game = await GameState.findOne({ ownerId: req.userId });
+
+  if (!game) {
+    return res.status(404).json({ error: "Nation not found" });
+  }
+
+  res.json({
+    nationId: game._id,
+    nationName: game.nationName,
+  });
 });
 
 /* ---------- Start Server AFTER Mongo ---------- */

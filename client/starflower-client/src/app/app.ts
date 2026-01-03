@@ -1,5 +1,8 @@
 import { Component, signal, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
+
+import { NationService } from './services/nation';
+import { AuthService } from './services/auth';
 
 @Component({
   selector: 'app-root',
@@ -16,9 +19,16 @@ export class App implements OnInit, OnDestroy {
 
   private clockInterval: any;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private auth: AuthService,
+    public nation: NationService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
+    this.nation.load();
+
     const update = () => {
       const now = new Date();
 
@@ -46,5 +56,11 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.clockInterval);
+  }
+
+  logout() {
+    this.auth.logout();
+    this.nation.clear();
+    this.router.navigate(['/login']);
   }
 }

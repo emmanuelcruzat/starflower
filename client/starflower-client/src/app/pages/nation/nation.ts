@@ -1,6 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
 import { GameService } from '../../services/game';
+import { AuthService } from '../../services/auth';
+import { NationService } from '../../services/nation';
 
 @Component({
   selector: 'app-nation',
@@ -13,43 +17,21 @@ export class NationComponent implements OnInit {
   game: any = null;
   currentDecision: any = null;
 
-  constructor(private gameService: GameService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private gameService: GameService,
+    private auth: AuthService,
+    private nation: NationService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    const id = localStorage.getItem('gameId');
+    const nationId = this.nation.nationId();
+    if (!nationId) return; // guard guarantees this won't happen
 
-    if (id) {
-      this.loadExistingGame(id);
-    } else {
-      this.startFreshGame();
-    }
-  }
-
-  private loadExistingGame(id: string) {
-    this.gameService.loadGame(id).subscribe({
-      next: (game) => {
-        this.game = game;
-        this.fetchDecision();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        localStorage.removeItem('gameId');
-        this.startFreshGame();
-      },
-    });
-  }
-
-  private startFreshGame() {
-    this.gameService.startGame().subscribe({
-      next: (game) => {
-        this.game = game;
-        localStorage.setItem('gameId', game._id);
-        this.fetchDecision();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Failed to start game', err);
-      },
+    this.gameService.loadGame(nationId).subscribe((game) => {
+      this.game = game;
+      this.fetchDecision();
     });
   }
 

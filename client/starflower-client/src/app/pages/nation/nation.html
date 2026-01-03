@@ -1,6 +1,6 @@
-<h1>Nation Name</h1>
-
 <div *ngIf="game; else loading">
+  <h1>{{ game?.nationName || 'Unnamed Nation' }}</h1>
+
   <p><strong>Turn:</strong> {{ game.turn }}</p>
 
   <ul>

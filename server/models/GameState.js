@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 
 const GameStateSchema = new mongoose.Schema({
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    unique: true,
+  },
+
+  nationName: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+
   stability: { type: Number, default: 50 },
   economy: { type: Number, default: 50 },
   legitimacy: { type: Number, default: 50 },

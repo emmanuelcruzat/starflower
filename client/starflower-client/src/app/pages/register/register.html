@@ -1,0 +1,20 @@
+<h1>Create Your Nation</h1>
+
+<form (ngSubmit)="submit()">
+  <input type="email" placeholder="Email" [(ngModel)]="email" name="email" required />
+
+  <input type="password" placeholder="Password" [(ngModel)]="password" name="password" required />
+
+  <input placeholder="Nation Name" [(ngModel)]="nationName" name="nationName" required />
+
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Creating…' : 'Create Nation' }}
+  </button>
+</form>
+
+<p class="error" *ngIf="error">{{ error }}</p>
+
+<p>
+  Already have a nation?
+  <a routerLink="/login">Log in</a>
+</p>
