@@ -18,6 +18,11 @@ const GameStateSchema = new mongoose.Schema({
     default: [],
   },
 
+  activeDecisionId: {
+    type: String,
+    default: null,
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
 

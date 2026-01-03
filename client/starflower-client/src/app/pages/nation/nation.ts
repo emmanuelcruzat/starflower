@@ -11,6 +11,7 @@ import { GameService } from '../../services/game';
 })
 export class NationComponent implements OnInit {
   game: any = null;
+  currentDecision: any = null;
 
   constructor(private gameService: GameService, private cdr: ChangeDetectorRef) {}
 
@@ -18,19 +19,24 @@ export class NationComponent implements OnInit {
     const id = localStorage.getItem('gameId');
 
     if (id) {
-      this.gameService.loadGame(id).subscribe({
-        next: (game) => {
-          this.game = game;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          localStorage.removeItem('gameId');
-          this.startFreshGame();
-        },
-      });
+      this.loadExistingGame(id);
     } else {
       this.startFreshGame();
     }
+  }
+
+  private loadExistingGame(id: string) {
+    this.gameService.loadGame(id).subscribe({
+      next: (game) => {
+        this.game = game;
+        this.fetchDecision();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        localStorage.removeItem('gameId');
+        this.startFreshGame();
+      },
+    });
   }
 
   private startFreshGame() {
@@ -38,24 +44,31 @@ export class NationComponent implements OnInit {
       next: (game) => {
         this.game = game;
         localStorage.setItem('gameId', game._id);
+        this.fetchDecision();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Failed to load game', err);
-
-        if (err.status === 400 || err.status === 404) {
-          localStorage.removeItem('gameId');
-          this.startFreshGame();
-        }
+        console.error('Failed to start game', err);
       },
     });
   }
 
-  advance() {
+  private fetchDecision() {
     if (!this.game?._id) return;
 
-    this.gameService.advanceTurn(this.game._id).subscribe((game) => {
-      this.game = game;
+    this.gameService.getActiveDecision(this.game._id).subscribe((decision) => {
+      this.currentDecision = decision;
+      this.cdr.detectChanges();
+    });
+  }
+
+  choose(optionId: string) {
+    if (!this.game || !this.currentDecision) return;
+
+    this.gameService.decide(this.game._id, this.currentDecision.id, optionId).subscribe((res) => {
+      this.game = res.game;
+      this.currentDecision = null;
+      this.fetchDecision();
       this.cdr.detectChanges();
     });
   }

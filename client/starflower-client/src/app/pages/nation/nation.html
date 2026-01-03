@@ -1,4 +1,4 @@
-<h1>Nation Overview</h1>
+<h1>Nation Name</h1>
 
 <div *ngIf="game; else loading">
   <p><strong>Turn:</strong> {{ game.turn }}</p>
@@ -8,7 +8,14 @@
     <li><strong>Economy:</strong> {{ game.economy }}</li>
     <li><strong>Legitimacy:</strong> {{ game.legitimacy }}</li>
   </ul>
-  <button (click)="advance()">Advance Turn</button>
+  <section *ngIf="game">
+    <h2>{{ currentDecision.title }}</h2>
+    <p>{{ currentDecision.prompt }}</p>
+
+    <button *ngFor="let opt of currentDecision.options" (click)="choose(opt.id)">
+      {{ opt.label }}
+    </button>
+  </section>
 </div>
 
 <ng-template #loading>
