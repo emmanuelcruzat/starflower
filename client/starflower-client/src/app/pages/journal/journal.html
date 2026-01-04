@@ -1,13 +1,14 @@
 <h2>National Journal</h2>
+<div *ngIf="gameService.game(); else loading">
+  <ul>
+    <li *ngFor="let entry of gameService.game().journal">
+      <strong>Turn {{ entry.turn }}:</strong>
+      {{ entry.text }}
+      <em style="opacity: 0.6"> ({{ entry.timestamp | date : 'short' }}) </em>
+    </li>
+  </ul>
+</div>
 
-<ul *ngIf="journal.length; else empty">
-  <li *ngFor="let entry of journal">
-    <strong>Turn {{ entry.turn }}:</strong>
-    {{ entry.text }}
-    <em style="opacity: 0.6"> ({{ entry.timestamp | date : 'short' }}) </em>
-  </li>
-</ul>
-
-<ng-template #empty>
-  <p>No entries yet.</p>
+<ng-template #loading>
+  <p>Loading journal…</p>
 </ng-template>

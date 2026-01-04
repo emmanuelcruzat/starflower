@@ -1,27 +1,25 @@
 @if (error) {
 <p class="error">{{ error }}</p>
-}
+} @if (gameService.game()) {
+<h1>{{ gameService.game()?.nationName || 'Unnamed Nation' }}</h1>
 
-<div *ngIf="game; else loading">
-  <h1>{{ game?.nationName || 'Unnamed Nation' }}</h1>
+<p><strong>Turn:</strong> {{ gameService.game()?.turn }}</p>
 
-  <p><strong>Turn:</strong> {{ game.turn }}</p>
+<ul>
+  <li><strong>Stability:</strong> {{ gameService.game()?.stability }}</li>
+  <li><strong>Economy:</strong> {{ gameService.game()?.economy }}</li>
+  <li><strong>Legitimacy:</strong> {{ gameService.game()?.legitimacy }}</li>
+</ul>
 
-  <ul>
-    <li><strong>Stability:</strong> {{ game.stability }}</li>
-    <li><strong>Economy:</strong> {{ game.economy }}</li>
-    <li><strong>Legitimacy:</strong> {{ game.legitimacy }}</li>
-  </ul>
-</div>
-
-<section *ngIf="currentDecision">
+@if (currentDecision) {
+<section>
   <h2>{{ currentDecision.title }}</h2>
   <p>{{ currentDecision.prompt }}</p>
 
   <div *ngFor="let opt of currentDecision.options" class="option">
-    <p class="option-description" *ngIf="opt.description">
-      {{ opt.description }}
-    </p>
+    @if (opt.description) {
+    <p class="option-description">{{ opt.description }}</p>
+    }
 
     <button (click)="choose(opt.id)">
       {{ opt.label }}
@@ -31,7 +29,6 @@
   <p>Authored by {{ currentDecision.author }}</p>
   <p>Decision ID: {{ currentDecision.id }} (Series {{ currentDecision.series }})</p>
 </section>
-
-<ng-template #loading>
-  <p>Loading nation data...</p>
-</ng-template>
+} } @else {
+<p>Loading nation data...</p>
+}

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
@@ -7,10 +7,31 @@ import { Injectable } from '@angular/core';
 export class GameService {
   private baseUrl = 'http://localhost:5000/api';
 
+  game = signal<any | null>(null);
+  loading = signal(false);
+
   constructor(private http: HttpClient) {}
 
   loadGame(id: string) {
-    return this.http.get<any>(`${this.baseUrl}/game/${id}`);
+    if (this.game()) return; // 👈 cache hit
+    if (this.loading()) return;
+
+    this.loading.set(true);
+
+    this.http.get<any>(`${this.baseUrl}/game/${id}`).subscribe({
+      next: (game) => {
+        this.game.set(game);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
+    });
+  }
+
+  refreshGame(id: string) {
+    this.game.set(null);
+    this.loadGame(id);
   }
 
   advanceTurn(id: string) {
